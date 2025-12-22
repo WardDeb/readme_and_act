@@ -75,8 +75,15 @@ class UpdateReadme:
             edict[event.id] = event_data
         self.events = edict
     
-    def construct_readme_section(self):
+    def construct_readme_section(self, num_events=5):
         '''
         Parse through the selected events, collate where needed, and collect them.
         '''
+        parsed_events = {}
+        for event_id, event in self.events.items():
+            # Get repo and construct URL
+            repo_name = f"https://github.com/{event.repo}"
+            if repo_name not in parsed_events:
+                parsed_events[repo_name] = []
+
 
