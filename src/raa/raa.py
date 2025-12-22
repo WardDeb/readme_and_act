@@ -1,6 +1,7 @@
 from github import Github
 from pydantic import BaseModel, field_validator
-from typing import Literal, Optional, Any
+from typing import Optional, Any
+from datetime import datetime
 
 # All possible event types from github
 ALLOWED_EVENT_TYPES = [
@@ -36,7 +37,7 @@ class GithubEvent(BaseModel):
     type: str
     actor: Optional[str] = None
     repo: Optional[str] = None
-    created_at: str
+    created_at: datetime
     payload: Any
     
     @field_validator('type')
@@ -68,7 +69,7 @@ class UpdateReadme:
                     type=event.type,
                     actor=event.actor.login if event.actor else None,
                     repo=event.repo.name if event.repo else None,
-                    created_at=event.created_at.isoformat(),
+                    created_at=event.created_at,
                     payload=event.payload
                 )
             edict[event.id] = event_data
@@ -76,5 +77,6 @@ class UpdateReadme:
     
     def construct_readme_section(self):
         '''
-        Parse through the selected events 
+        Parse through the selected events, collate where needed, and collect them.
         '''
+
