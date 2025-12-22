@@ -25,4 +25,4 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 raa = { path = ".", editable = true }
 
 [tool.pixi.tasks]
-test = "python -c 'import raa.raa as p; p.fetch_activity()'"
+test = "python scripts/test.py"

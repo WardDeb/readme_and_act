@@ -1034,7 +1034,7 @@ packages:
 - pypi: ./
   name: raa
   version: 0.0.0
-  sha256: 4fbbeef3a3ba94f2974cd0914c687debd3264eee3c3148ed7edd31c3adb4ff92
+  sha256: 16ec097d010f5105770caea19c20348bfc3a0017df97aeb84864812f4e3d3171
   requires_dist:
   - requests
   - pydantic
