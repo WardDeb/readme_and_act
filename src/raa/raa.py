@@ -23,15 +23,15 @@ ALLOWED_EVENT_TYPES = [
 ]
 
 # Wanted event types to display
-WANTED_EVENT_TYPES = [
-    "DiscussionEvent",
-    "ForkEvent",
-    "IssuesEvent",
-    "PublicEvent",
-    "PullRequestEvent",
-    "PushEvent",
-    "ReleaseEvent"
-]
+WANTED_EVENT_TYPES = {
+    "DiscussionEvent": "📣 contributed to discussion in",
+    "ForkEvent": "🥄 forked",
+    "IssuesEvent": "🐞 made/updated issue in",
+    "PublicEvent": "🎉 released",
+    "PullRequestEvent": "🪢 PR'ed to",
+    "PushEvent": "🫸 pushed commit(s) to" ,
+    "ReleaseEvent": "🎉 released",
+}
 
 class GithubEvent(BaseModel):
     type: str
@@ -82,8 +82,18 @@ class UpdateReadme:
         parsed_events = {}
         for event_id, event in self.events.items():
             # Get repo and construct URL
-            repo_name = f"https://github.com/{event.repo}"
-            if repo_name not in parsed_events:
-                parsed_events[repo_name] = []
-
+            repo_url = f"https://github.com/{event.repo}"
+            repo_name = event.repo
+            if event.repo not in parsed_events:
+                parsed_events[repo_name] = f"{WANTED_EVENT_TYPES[event.type]}|[{repo_name}]({repo_url})"
+            else:
+                if WANTED_EVENT_TYPES[event.type] not in parsed_events[repo_name]:
+                    eventstr, repostr = parsed_events[repo_name].split("|")
+                    eventstr += f", {WANTED_EVENT_TYPES[event.type]}"
+                    parsed_events[repo_name] = f"{eventstr}|{repostr}"
+            if len(parsed_events) == num_events:
+               break
+        self.parsed_events = []
+        for _, event in parsed_events.items():
+            self.parsed_events.append(event.replace("|", " "))
 

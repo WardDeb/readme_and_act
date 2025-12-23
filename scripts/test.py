@@ -2,6 +2,6 @@ import raa.raa as rp
 
 p = rp.UpdateReadme("WardDeb")
 p.fetch_activity()
-for _ in p.events:
-    print(_)
-    print(p.events[_])
+p.construct_readme_section()
+for event in p.parsed_events:
+    print(f"{event}")
