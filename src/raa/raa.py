@@ -112,6 +112,6 @@ class UpdateReadme:
             if len(parsed_events) == num_events:
                break
         self.parsed_events = []
-        for _, event in parsed_events.items():
-            self.parsed_events.append(event.replace("|", " "))
+        for ix, (_, event) in enumerate(parsed_events.items()):
+            self.parsed_events.append(f"{ix+1}. " + event.replace("|", " "))
 
