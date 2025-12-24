@@ -5,4 +5,4 @@ COPY . .
 
 RUN pip install .
 
-ENTRYPOINT ["python", "/action/main.py"]
+ENTRYPOINT ["raa", ]

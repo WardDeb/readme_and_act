@@ -2,6 +2,7 @@ from github import Github
 from pydantic import BaseModel, field_validator
 from typing import Optional, Any
 from datetime import datetime
+from pathlib import Path
 
 # All possible event types from github
 ALLOWED_EVENT_TYPES = [
@@ -52,9 +53,26 @@ class UpdateReadme:
     General class for an UpdateReadme instance.
     '''
 
-    def __init__(self, username=None):
+    def __init__(self, username=None, filename="README.md"):
         self.g = Github()
         self.user = self.g.get_user(username)
+        self.filename = Path(filename)
+        self.validate_filename()
+
+    def validate_filename(self):
+        '''
+        Validate that the filename is a markdown file.
+        '''
+        if not self.filename.exists():
+            raise FileNotFoundError(f"The file {self.filename} does not exist.")
+        replace_pattern = False
+        with self.filename.open('r') as f:
+            for line in f:
+                if "<!--START_SECTION:raa-->" in line:
+                    replace_pattern = True
+                    break
+        if not replace_pattern:
+            raise ValueError("The README file must contain the pattern '<!--START_SECTION:raa-->' to identify where to insert activity.")
 
     def fetch_activity(self):
         '''
