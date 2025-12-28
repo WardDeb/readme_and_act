@@ -3,6 +3,8 @@ from pydantic import BaseModel, field_validator
 from typing import Optional, Any
 from datetime import datetime
 from pathlib import Path
+import re
+import os
 
 # All possible event types from github
 ALLOWED_EVENT_TYPES = [
@@ -53,9 +55,10 @@ class UpdateReadme:
     General class for an UpdateReadme instance.
     '''
 
-    def __init__(self, username=None, filename="README.md"):
-        self.g = Github()
+    def __init__(self, username=None, filename="README.md", github_token=None):
+        self.g = Github(github_token) if github_token else Github()
         self.user = self.g.get_user(username)
+        self.username = username
         self.filename = Path(filename)
         self.validate_filename()
 
@@ -114,4 +117,51 @@ class UpdateReadme:
         self.parsed_events = []
         for ix, (_, event) in enumerate(parsed_events.items()):
             self.parsed_events.append(f"{ix+1}. " + event.replace("|", " "))
+
+    def update_file(self, commit_email, commit_msg, commit_name, repo_name):
+        '''
+        Update the target file with the parsed events between the pattern markers,
+        then commit and push the changes
+        '''
+        # Read the file content from GitHub
+        repo = self.g.get_repo(repo_name)
+        file_path = str(self.filename)
+        
+        try:
+            contents = repo.get_contents(file_path)
+            current_content = contents.decoded_content.decode('utf-8')
+        except Exception as e:
+            raise FileNotFoundError(f"Could not fetch {file_path} from {repo_name}: {e}")
+        
+        # Define the pattern markers
+        start_marker = "<!--START_SECTION:raa-->"
+        end_marker = "<!--END_SECTION:raa-->"
+        
+        # Create the new section content
+        new_section = "\n".join(self.parsed_events)
+        
+        # Replace content between markers
+        pattern = f"{re.escape(start_marker)}.*?{re.escape(end_marker)}"
+        replacement = f"{start_marker}\n{new_section}\n{end_marker}"
+        updated_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
+        
+        # Check if content actually changed
+        if updated_content == current_content:
+            print(f"ℹ️  No changes to commit in {self.filename}")
+            return
+        
+        # Update the file on GitHub
+        try:
+            repo.update_file(
+                path=file_path,
+                message=commit_msg,
+                content=updated_content,
+                sha=contents.sha,
+                committer={"name": commit_name, "email": commit_email}
+            )
+            print(f"✅ Updated {self.filename} and pushed to GitHub")
+        except Exception as e:
+            raise RuntimeError(f"Failed to update file on GitHub: {e}")
+
+
 
