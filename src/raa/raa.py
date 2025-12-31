@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 import re
 import os
+import logging
 
 # All possible event types from github
 ALLOWED_EVENT_TYPES = [
@@ -56,17 +57,26 @@ class UpdateReadme:
     '''
 
     def __init__(self, username=None, filename="README.md", github_token=None):
+        # Initialize logging first so methods called during __init__ can use self.logger
+        logging.basicConfig(level=logging.INFO)
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Initializing UpdateReadme instance")
+
         self.g = Github(github_token) if github_token else Github()
         self.user = self.g.get_user(username)
         self.username = username
         self.filename = Path(filename)
         self.validate_filename()
+        self.logger.info("Initialized UpdateReadme instance")
+
 
     def validate_filename(self):
         '''
         Validate that the filename is a markdown file.
         '''
+        self.logger.info(f"Validating filename: {self.filename}")
         if not self.filename.exists():
+            self.logger.error(f"The file {self.filename} does not exist.")
             raise FileNotFoundError(f"The file {self.filename} does not exist.")
         replace_pattern = False
         with self.filename.open('r') as f:
@@ -75,12 +85,14 @@ class UpdateReadme:
                     replace_pattern = True
                     break
         if not replace_pattern:
+            self.logger.error("The README file must contain the pattern '<!--START_SECTION:raa-->' to identify where to insert activity.")
             raise ValueError("The README file must contain the pattern '<!--START_SECTION:raa-->' to identify where to insert activity.")
 
     def fetch_activity(self):
         '''
         Fetch recent Github activity
         '''
+        self.logger.info(f"Fetching recent activity for user: {self.username}")
         events = self.user.get_events()
         edict = {}
 
@@ -95,11 +107,13 @@ class UpdateReadme:
                 )
             edict[event.id] = event_data
         self.events = edict
+        self.logger.info(f"Fetched {len(self.events)} (whitelisted) events")
     
     def construct_readme_section(self, num_events=5):
         '''
         Parse through the selected events, collate where needed, and collect them.
         '''
+        self.logger.info(f"Constructing README section with top {num_events} events")
         parsed_events = {}
         for event_id, event in self.events.items():
             # Get repo and construct URL
@@ -117,6 +131,7 @@ class UpdateReadme:
         self.parsed_events = []
         for ix, (_, event) in enumerate(parsed_events.items()):
             self.parsed_events.append(f"{ix+1}. " + event.replace("|", " "))
+        self.logger.info(f"README section constructed, {len(self.parsed_events)} events after collation.")
 
     def update_file(self, commit_email, commit_msg, commit_name, repo_name):
         '''
@@ -131,6 +146,7 @@ class UpdateReadme:
             contents = repo.get_contents(file_path)
             current_content = contents.decoded_content.decode('utf-8')
         except Exception as e:
+            self.logger.error(f"Could not fetch {file_path} from {repo_name}: {e}")
             raise FileNotFoundError(f"Could not fetch {file_path} from {repo_name}: {e}")
         
         # Define the pattern markers
@@ -145,11 +161,6 @@ class UpdateReadme:
         replacement = f"{start_marker}\n{new_section}\n{end_marker}"
         updated_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
         
-        # Check if content actually changed
-        if updated_content == current_content:
-            print(f"ℹ️  No changes to commit in {self.filename}")
-            return
-        
         # Update the file on GitHub
         try:
             repo.update_file(
@@ -159,8 +170,9 @@ class UpdateReadme:
                 sha=contents.sha,
                 committer={"name": commit_name, "email": commit_email}
             )
-            print(f"✅ Updated {self.filename} and pushed to GitHub")
+            self.logger.info(f"Updated {file_path} in {repo_name} successfully.")
         except Exception as e:
+            self.logger.error(f"Failed to update file on GitHub: {e}")
             raise RuntimeError(f"Failed to update file on GitHub: {e}")
 
 
