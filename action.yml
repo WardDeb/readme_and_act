@@ -11,9 +11,13 @@ inputs:
     description: "The maximum number of lines to place in your readme file"
     default: 5
     required: false
-  TARGET_FILE:
+  FILE_NAME:
     description: "The file location to write changes to"
     default: "README.md"
+    required: false
+  REPO_NAME:
+    description: "Repository name"
+    default: ${{ github.repository }}
     required: false
 
 runs:

@@ -28,4 +28,4 @@ platforms = ["linux-64", "osx-arm64", "osx-64", "win-64"]
 raa = { path = ".", editable = true }
 
 [tool.pixi.tasks]
-test = "python scripts/test.py"
+test = "raa --username WardDeb --filename README.md --max_lines 5 --repo WardDeb/WardDeb --test"

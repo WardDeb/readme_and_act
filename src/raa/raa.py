@@ -62,7 +62,7 @@ class UpdateReadme:
     General class for an UpdateReadme instance.
     '''
 
-    def __init__(self, username=None, filename="README.md", github_token=None, test=False, num_events=5, gh_dict={}):
+    def __init__(self, username=None, filename="README.md", github_token=None, test=False, num_events=5, gh_repo=None):
         # Initialize logging first so methods called during __init__ can use self.logger
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ class UpdateReadme:
         self.filename = Path(filename)
         self.test = test
         self.num_events = num_events
-        self.gh = gh_dict
+        self.gh_repo = gh_repo
         self.validate_filename()
         self.logger.info("Initialized UpdateReadme instance")
 
@@ -151,10 +151,10 @@ class UpdateReadme:
         Update the target file with the parsed events between the pattern markers,
         then commit and push the changes
         '''
-        commit_email = self.gh.get("commit_email", "41898282+github-actions[bot]@users.noreply.github.com")
-        commit_name = self.gh.get("commit_name", "github-actions[bot]")
-        commit_msg = self.gh.get("commit_msg", "More work found!")
-        repo_name = self.gh.get("repo_name", None)
+        commit_email = "41898282+github-actions[bot]@users.noreply.github.com"
+        commit_name = "commit_name", "github-actions[bot]"
+        commit_msg = "commit_msg", "More work found!"
+        repo_name = self.gh_repo
         if not repo_name:
             self.logger.error("No repo_name provided.")
             raise ValueError("No repo_name provided.")
