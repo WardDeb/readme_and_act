@@ -37,6 +37,12 @@ WANTED_EVENT_TYPES = {
     "ReleaseEvent": "🎉 released",
 }
 
+# file markers
+FILE_MARKERS = {
+    "start_marker": "<!--START_SECTION:raa-->",
+    "end_marker": "<!--END_SECTION:raa-->"
+}
+
 class GithubEvent(BaseModel):
     type: str
     actor: Optional[str] = None
@@ -56,7 +62,7 @@ class UpdateReadme:
     General class for an UpdateReadme instance.
     '''
 
-    def __init__(self, username=None, filename="README.md", github_token=None):
+    def __init__(self, username=None, filename="README.md", github_token=None, test=False, num_events=5, gh_dict={}):
         # Initialize logging first so methods called during __init__ can use self.logger
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
@@ -66,6 +72,9 @@ class UpdateReadme:
         self.user = self.g.get_user(username)
         self.username = username
         self.filename = Path(filename)
+        self.test = test
+        self.num_events = num_events
+        self.gh = gh_dict
         self.validate_filename()
         self.logger.info("Initialized UpdateReadme instance")
 
@@ -78,15 +87,19 @@ class UpdateReadme:
         if not self.filename.exists():
             self.logger.error(f"The file {self.filename} does not exist.")
             raise FileNotFoundError(f"The file {self.filename} does not exist.")
-        replace_pattern = False
+        replace_start = False
+        replace_end = False
         with self.filename.open('r') as f:
             for line in f:
-                if "<!--START_SECTION:raa-->" in line:
-                    replace_pattern = True
+                if FILE_MARKERS["start_marker"] in line:
+                    replace_start = True
+                if FILE_MARKERS["end_marker"] in line:
+                    replace_end = True
+                if replace_start and replace_end:
                     break
-        if not replace_pattern:
-            self.logger.error("The README file must contain the pattern '<!--START_SECTION:raa-->' to identify where to insert activity.")
-            raise ValueError("The README file must contain the pattern '<!--START_SECTION:raa-->' to identify where to insert activity.")
+        if not (replace_start and replace_end):
+            self.logger.error(f"The README file must contain a start pattern {FILE_MARKERS['start_marker']} and end pattern {FILE_MARKERS['end_marker']} to identify where to insert activity.")
+            raise ValueError(f"The README file must contain a start pattern {FILE_MARKERS['start_marker']} and end pattern {FILE_MARKERS['end_marker']} to identify where to insert activity.")
 
     def fetch_activity(self):
         '''
@@ -105,15 +118,15 @@ class UpdateReadme:
                     created_at=event.created_at,
                     payload=event.payload
                 )
-            edict[event.id] = event_data
+                edict[event.id] = event_data
         self.events = edict
         self.logger.info(f"Fetched {len(self.events)} (whitelisted) events")
     
-    def construct_readme_section(self, num_events=5):
+    def construct_readme_section(self):
         '''
         Parse through the selected events, collate where needed, and collect them.
         '''
-        self.logger.info(f"Constructing README section with top {num_events} events")
+        self.logger.info(f"Constructing README section with top {self.num_events} events")
         parsed_events = {}
         for event_id, event in self.events.items():
             # Get repo and construct URL
@@ -126,18 +139,33 @@ class UpdateReadme:
                     eventstr, repostr = parsed_events[repo_name].split("|")
                     eventstr += f", {WANTED_EVENT_TYPES[event.type]}"
                     parsed_events[repo_name] = f"{eventstr}|{repostr}"
-            if len(parsed_events) == num_events:
+            if len(parsed_events) == self.num_events:
                break
         self.parsed_events = []
         for ix, (_, event) in enumerate(parsed_events.items()):
             self.parsed_events.append(f"{ix+1}. " + event.replace("|", " "))
         self.logger.info(f"README section constructed, {len(self.parsed_events)} events after collation.")
 
-    def update_file(self, commit_email, commit_msg, commit_name, repo_name):
+    def update_file(self):
         '''
         Update the target file with the parsed events between the pattern markers,
         then commit and push the changes
         '''
+        commit_email = self.gh.get("commit_email", "41898282+github-actions[bot]@users.noreply.github.com")
+        commit_name = self.gh.get("commit_name", "github-actions[bot]")
+        commit_msg = self.gh.get("commit_msg", "More work found!")
+        repo_name = self.gh.get("repo_name", None)
+        if not repo_name:
+            self.logger.error("No repo_name provided.")
+            raise ValueError("No repo_name provided.")
+        self.logger.info(
+            f"github info provided: commit_email={commit_email}, commit_name={commit_name}, commit_msg={commit_msg}, repo_name={repo_name}"
+        )
+        # Update the file on GitHub
+        if self.test:
+            self.logger.info("Testing mode. Not committing.")
+            return
+
         # Read the file content from GitHub
         repo = self.g.get_repo(repo_name)
         file_path = str(self.filename)
@@ -149,10 +177,6 @@ class UpdateReadme:
             self.logger.error(f"Could not fetch {file_path} from {repo_name}: {e}")
             raise FileNotFoundError(f"Could not fetch {file_path} from {repo_name}: {e}")
         
-        # Define the pattern markers
-        start_marker = "<!--START_SECTION:raa-->"
-        end_marker = "<!--END_SECTION:raa-->"
-        
         # Create the new section content
         new_section = "\n".join(self.parsed_events)
         
@@ -161,7 +185,6 @@ class UpdateReadme:
         replacement = f"{start_marker}\n{new_section}\n{end_marker}"
         updated_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
         
-        # Update the file on GitHub
         try:
             repo.update_file(
                 path=file_path,
@@ -174,6 +197,3 @@ class UpdateReadme:
         except Exception as e:
             self.logger.error(f"Failed to update file on GitHub: {e}")
             raise RuntimeError(f"Failed to update file on GitHub: {e}")
-
-
-
