@@ -27,3 +27,9 @@ inputs:
 runs:
   using: docker
   image: Dockerfile
+  env:
+    GH_USERNAME: ${{ inputs.GH_USERNAME }}
+    MAX_LINES: ${{ inputs.MAX_LINES }}
+    FILE_NAME: ${{ inputs.FILE_NAME }}
+    REPO_NAME: ${{ inputs.REPO_NAME }}
+    GH_TOKEN: ${{ inputs.GH_TOKEN }}
