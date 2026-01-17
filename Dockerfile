@@ -5,6 +5,4 @@ COPY . .
 
 RUN pip install .
 
-ENTRYPOINT [
-    "raa"
-]
+ENTRYPOINT ["raa"]
