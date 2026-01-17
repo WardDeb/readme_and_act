@@ -20,6 +20,8 @@ def main():
         args.max_lines = int(os.getenv('MAX_LINES'))
     if not args.repo:
         args.repo = os.getenv('REPO_NAME')
+    if not args.repo:
+        args.repo = f"{args.username}/{args.username}"
     
     p = rp.UpdateReadme(
         username = args.username,
