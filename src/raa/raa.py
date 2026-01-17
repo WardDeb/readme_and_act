@@ -152,8 +152,8 @@ class UpdateReadme:
         then commit and push the changes
         '''
         commit_email = "41898282+github-actions[bot]@users.noreply.github.com"
-        commit_name = "commit_name", "github-actions[bot]"
-        commit_msg = "commit_msg", "More work found!"
+        commit_name = "github-actions[bot]"
+        commit_msg = "More work found!"
         repo_name = self.gh_repo
         if not repo_name:
             self.logger.error("No repo_name provided.")
