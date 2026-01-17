@@ -181,8 +181,8 @@ class UpdateReadme:
         new_section = "\n".join(self.parsed_events)
         
         # Replace content between markers
-        pattern = f"{re.escape(start_marker)}.*?{re.escape(end_marker)}"
-        replacement = f"{start_marker}\n{new_section}\n{end_marker}"
+        pattern = f"{re.escape(FILE_MARKERS["start_marker"])}.*?{re.escape(FILE_MARKERS["end_marker"])}"
+        replacement = f"{FILE_MARKERS["start_marker"]}\n{new_section}\n{FILE_MARKERS["end_marker"]}"
         updated_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
         
         try:
