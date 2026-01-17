@@ -23,12 +23,15 @@ def main():
     if not args.repo:
         args.repo = f"{args.username}/{args.username}"
     
+    github_token = os.getenv('GH_TOKEN')
+    
     p = rp.UpdateReadme(
         username = args.username,
         filename = args.filename,
         test = args.test,
         num_events = args.max_lines,
-        gh_repo = args.repo
+        gh_repo = args.repo,
+        github_token = github_token
     )
     p.fetch_activity()
     p.construct_readme_section()
