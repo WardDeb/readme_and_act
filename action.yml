@@ -19,6 +19,10 @@ inputs:
     description: "Repository name"
     default: ${{ github.repository }}
     required: false
+  GH_TOKEN:
+    description: "GitHub token for authentication"
+    default: ${{ secrets.GITHUB_TOKEN }}
+    required: false
 
 runs:
   using: docker
