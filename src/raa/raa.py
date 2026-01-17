@@ -1,4 +1,4 @@
-from github import Github
+from github import Github, InputGitAuthor
 from pydantic import BaseModel, field_validator
 from typing import Optional, Any
 from datetime import datetime
@@ -186,12 +186,13 @@ class UpdateReadme:
         updated_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
         
         try:
+            committer = InputGitAuthor(commit_name, commit_email)
             repo.update_file(
                 path=file_path,
                 message=commit_msg,
                 content=updated_content,
                 sha=contents.sha,
-                committer={"name": commit_name, "email": commit_email}
+                committer=committer
             )
             self.logger.info(f"Updated {file_path} in {repo_name} successfully.")
         except Exception as e:
