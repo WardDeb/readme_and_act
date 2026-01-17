@@ -68,7 +68,12 @@ class UpdateReadme:
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing UpdateReadme instance")
 
-        self.g = Github(github_token) if github_token else Github()
+        if github_token:
+            self.logger.info("Using authenticated GitHub client")
+            self.g = Github(github_token)
+        else:
+            self.logger.warning("No GitHub token provided - using unauthenticated client (limited API access)")
+            self.g = Github()
         self.user = self.g.get_user(username)
         self.username = username
         self.filename = Path(filename)
