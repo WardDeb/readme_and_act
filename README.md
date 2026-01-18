@@ -43,8 +43,9 @@ Other (optional) variables are:
   - GH_USERNAME*: github username 
   - MAX_LINES: maximum number of lines to add in the readme (defaults to 5)
   - FILE_NAME: the actual file to be updated (has to contain the markers), defaults to README.md
-  - REPO_NAME: the repository to update. Defaults to <GH_USERNAME>/<GH_USERNAME>
+  - REPO_NAME*: the repository to update. Defaults to <GH_USERNAME>/<GH_USERNAME>
 
+Note that * marked variables are only relevant for testing, and are not relevant when running the action in a github workflow.
 
 ## Testing locally
 To test locally, you can use [pixi](https://pixi.prefix.dev/latest/) and run:
