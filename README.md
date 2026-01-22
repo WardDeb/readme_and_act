@@ -14,6 +14,11 @@ The action runs on a github repository, and will update a file (specified as 'FI
 
 The action will replace the content between those markers with the inferred recent activity.
 
+## Example
+
+An example of an updated readme:
+![WardDeb's github activity](example.png)
+
 ## Action template
 
 This can be used as a template (will run every 30 minutes):
