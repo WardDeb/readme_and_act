@@ -6,42 +6,13 @@ from pathlib import Path
 import re
 import os
 import logging
+from raa.defaults import ALLOWED_EVENT_TYPES as DEFAULT_ALLOWED_EVENT_TYPES, \
+                        WANTED_EVENT_TYPES as DEFAULT_WANTED_EVENT_TYPES, \
+                        FILE_MARKERS as DEFAULT_FILE_MARKERS
 
-# All possible event types from github
-ALLOWED_EVENT_TYPES = [
-    "CreateEvent",
-    "DeleteEvent",
-    "DiscussionEvent",
-    "ForkEvent",
-    "GollumEvent",
-    "IssueCommentEvent",
-    "IssuesEvent",
-    "MemberEvent",
-    "PublicEvent",
-    "PullRequestEvent",
-    "PullRequestReviewEvent",
-    "PullRequestReviewCommentEvent",
-    "PushEvent",
-    "ReleaseEvent",
-    "WatchEvent",
-]
-
-# Wanted event types to display
-WANTED_EVENT_TYPES = {
-    "DiscussionEvent": "📣 contributed to discussion in",
-    "ForkEvent": "🥄 forked",
-    "IssuesEvent": "🐞 made/updated issue in",
-    "PublicEvent": "🎉 released",
-    "PullRequestEvent": "🪢 PR'ed to",
-    "PushEvent": "🫸 pushed commit(s) to" ,
-    "ReleaseEvent": "🎉 released",
-}
-
-# file markers
-FILE_MARKERS = {
-    "start_marker": "<!--START_SECTION:raa-->",
-    "end_marker": "<!--END_SECTION:raa-->"
-}
+ALLOWED_EVENT_TYPES = DEFAULT_ALLOWED_EVENT_TYPES
+WANTED_EVENT_TYPES = DEFAULT_WANTED_EVENT_TYPES
+FILE_MARKERS = DEFAULT_FILE_MARKERS
 
 class GithubEvent(BaseModel):
     type: str
@@ -62,7 +33,7 @@ class UpdateReadme:
     General class for an UpdateReadme instance.
     '''
 
-    def __init__(self, username=None, filename="README.md", github_token=None, test=False, num_events=5, gh_repo=None):
+    def __init__(self, username=None, filename="README.md", github_token=None, test=False, num_events=5, gh_repo=None, cfg=None):
         # Initialize logging first so methods called during __init__ can use self.logger
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
@@ -82,6 +53,32 @@ class UpdateReadme:
         self.gh_repo = gh_repo
         self.validate_filename()
         self.logger.info("Initialized UpdateReadme instance")
+
+        if cfg:
+            import tomllib
+            self.logger.info(f"Loading configuration from {cfg}")
+            with open(cfg, "rb") as f:
+                config_data = tomllib.load(f)
+            global ALLOWED_EVENT_TYPES, WANTED_EVENT_TYPES, FILE_MARKERS
+
+            _allowed = config_data.get("ALLOWED_EVENT_TYPES")
+            if _allowed is not None:
+                ALLOWED_EVENT_TYPES = _allowed
+                self.logger.info(f"Overridden ALLOWED_EVENT_TYPES with {ALLOWED_EVENT_TYPES}")
+
+            _wanted = config_data.get("WANTED_EVENT_TYPES")
+            if _wanted is not None:
+                WANTED_EVENT_TYPES = _wanted
+                self.logger.info(f"Overridden WANTED_EVENT_TYPES with {WANTED_EVENT_TYPES}")
+
+            _markers = config_data.get("FILE_MARKERS")
+            if _markers is not None:
+                FILE_MARKERS = _markers
+                self.logger.info(f"Overridden FILE_MARKERS with {FILE_MARKERS}")
+        else:
+            self.logger.info("Using default configuration")
+
+
 
 
     def validate_filename(self):
@@ -166,10 +163,6 @@ class UpdateReadme:
         self.logger.info(
             f"github info provided: commit_email={commit_email}, commit_name={commit_name}, commit_msg={commit_msg}, repo_name={repo_name}"
         )
-        # Update the file on GitHub
-        if self.test:
-            self.logger.info("Testing mode. Not committing.")
-            return
 
         # Read the file content from GitHub
         repo = self.g.get_repo(repo_name)
@@ -190,20 +183,23 @@ class UpdateReadme:
         replacement = f"{FILE_MARKERS["start_marker"]}\n{new_section}\n{FILE_MARKERS["end_marker"]}"
         updated_content = re.sub(pattern, replacement, current_content, flags=re.DOTALL)
 
+        self.logger.info(f"Replaced content is: {replacement}")
+
         if updated_content == current_content:
             self.logger.info("No changes detected in the README section. Not committing.")
             return
         
-        try:
-            committer = InputGitAuthor(commit_name, commit_email)
-            repo.update_file(
-                path=file_path,
-                message=commit_msg,
-                content=updated_content,
-                sha=contents.sha,
-                committer=committer
-            )
-            self.logger.info(f"Updated {file_path} in {repo_name} successfully.")
-        except Exception as e:
-            self.logger.error(f"Failed to update file on GitHub: {e}")
-            raise RuntimeError(f"Failed to update file on GitHub: {e}")
+        if not self.test:
+            try:
+                committer = InputGitAuthor(commit_name, commit_email)
+                repo.update_file(
+                    path=file_path,
+                    message=commit_msg,
+                    content=updated_content,
+                    sha=contents.sha,
+                    committer=committer
+                )
+                self.logger.info(f"Updated {file_path} in {repo_name} successfully.")
+            except Exception as e:
+                self.logger.error(f"Failed to update file on GitHub: {e}")
+                raise RuntimeError(f"Failed to update file on GitHub: {e}")
