@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/WardDeb/readme_and_act/compare/v0.2.0...v0.3.0) (2026-01-27)
+
+
+### Features
+
+* toml option for gh configs ([#9](https://github.com/WardDeb/readme_and_act/issues/9)) ([a4fef84](https://github.com/WardDeb/readme_and_act/commit/a4fef84c521f654e992d79fbefa2ca17e28465fe))
+
 ## [0.2.0](https://github.com/WardDeb/readme_and_act/compare/v0.1.0...v0.2.0) (2026-01-22)
 
 
