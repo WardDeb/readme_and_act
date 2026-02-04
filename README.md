@@ -2,8 +2,6 @@
 an action to display recent activity on your profile, python-based as I don't know javascript.
 Setup is inspired by both [recent-activity](https://github.com/Readme-Workflows/recent-activity/blob/main/action.yml) and [github activity readme](https://github.com/jamesgeorge007/github-activity-readme).
 
-Note that this is work in progress, prone to changes.
-
 ## Setup
 
 The action runs on a github repository, and will update a file (specified as 'FILE_NAME', see below) in that repository. The file needs to contain the following markers:
@@ -49,8 +47,10 @@ Other (optional) variables are:
   - MAX_LINES: maximum number of lines to add in the readme (defaults to 5)
   - FILE_NAME: the actual file to be updated (has to contain the markers), defaults to README.md
   - REPO_NAME*: the repository to update. Defaults to <GH_USERNAME>/<GH_USERNAME>
+  - CFG_PATH: Path to a toml configuration file. Defaults to `.github/raa.toml`
 
 Note that * marked variables are only relevant for testing, and are not relevant when running the action in a github workflow.
+An example for the CFG_PATH toml file is included in the repository as gh_config.toml.
 
 ## Testing locally
 To test locally, you can use [pixi](https://pixi.prefix.dev/latest/) and run:
