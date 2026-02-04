@@ -38,6 +38,7 @@ class UpdateReadme:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         self.logger.info("Initializing UpdateReadme instance")
+        global ALLOWED_EVENT_TYPES, WANTED_EVENT_TYPES, FILE_MARKERS
 
         if github_token:
             self.logger.info("Using authenticated GitHub client")
@@ -53,13 +54,13 @@ class UpdateReadme:
         self.gh_repo = gh_repo
         self.validate_filename()
         self.logger.info("Initialized UpdateReadme instance")
+        self.ignore_repos = []
 
         if cfg:
             import tomllib
             self.logger.info(f"Loading configuration from {cfg}")
             with open(cfg, "rb") as f:
                 config_data = tomllib.load(f)
-            global ALLOWED_EVENT_TYPES, WANTED_EVENT_TYPES, FILE_MARKERS
 
             _allowed = config_data.get("ALLOWED_EVENT_TYPES")
             if _allowed is not None:
@@ -75,11 +76,14 @@ class UpdateReadme:
             if _markers is not None:
                 FILE_MARKERS = _markers
                 self.logger.info(f"Overridden FILE_MARKERS with {FILE_MARKERS}")
+            
+            _ignore = config_data.get("IGNORE_REPOS")
+            if _ignore is not None:
+                self.ignore_repos = _ignore
+                self.logger.info(f"Loaded IGNORE_REPOS: {self.ignore_repos}")
+
         else:
             self.logger.info("Using default configuration")
-
-
-
 
     def validate_filename(self):
         '''
@@ -120,6 +124,9 @@ class UpdateReadme:
                     created_at=event.created_at,
                     payload=event.payload
                 )
+                if event_data.repo in self.ignore_repos:
+                    self.logger.info(f"Ignoring event from repo: {event_data.repo}")
+                    continue
                 edict[event.id] = event_data
         self.events = edict
         self.logger.info(f"Fetched {len(self.events)} (whitelisted) events")

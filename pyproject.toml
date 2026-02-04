@@ -33,3 +33,4 @@ raa = { path = ".", editable = true }
 [tool.pixi.tasks]
 test = "raa --username WardDeb --filename README.md --max_lines 5 --repo WardDeb/WardDeb --test"
 test_toml = "raa --username WardDeb --filename README.md --max_lines 5 --repo WardDeb/WardDeb --test --cfg gh_config.toml"
+test_toml_env = "CFG_PATH=gh_config.toml raa --username WardDeb --filename README.md --max_lines 5 --repo WardDeb/WardDeb --test"
