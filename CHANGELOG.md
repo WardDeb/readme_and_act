@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/WardDeb/readme_and_act/compare/v0.3.0...v0.4.0) (2026-02-04)
+
+
+### Features
+
+* ignore repositories by choice ([#11](https://github.com/WardDeb/readme_and_act/issues/11)) ([c34514c](https://github.com/WardDeb/readme_and_act/commit/c34514c85503bbfa3c702b5a637054779f7d54cf))
+* make toml accessible within the action ([c34514c](https://github.com/WardDeb/readme_and_act/commit/c34514c85503bbfa3c702b5a637054779f7d54cf))
+
 ## [0.3.0](https://github.com/WardDeb/readme_and_act/compare/v0.2.0...v0.3.0) (2026-01-27)
 
 
