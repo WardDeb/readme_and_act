@@ -87,6 +87,32 @@ class UpdateReadme:
 
 
 
+        if cfg:
+            import tomllib
+            self.logger.info(f"Loading configuration from {cfg}")
+            with open(cfg, "rb") as f:
+                config_data = tomllib.load(f)
+            global ALLOWED_EVENT_TYPES, WANTED_EVENT_TYPES, FILE_MARKERS
+
+            _allowed = config_data.get("ALLOWED_EVENT_TYPES")
+            if _allowed is not None:
+                ALLOWED_EVENT_TYPES = _allowed
+                self.logger.info(f"Overridden ALLOWED_EVENT_TYPES with {ALLOWED_EVENT_TYPES}")
+
+            _wanted = config_data.get("WANTED_EVENT_TYPES")
+            if _wanted is not None:
+                WANTED_EVENT_TYPES = _wanted
+                self.logger.info(f"Overridden WANTED_EVENT_TYPES with {WANTED_EVENT_TYPES}")
+
+            _markers = config_data.get("FILE_MARKERS")
+            if _markers is not None:
+                FILE_MARKERS = _markers
+                self.logger.info(f"Overridden FILE_MARKERS with {FILE_MARKERS}")
+        else:
+            self.logger.info("Using default configuration")
+
+
+
 
     def validate_filename(self):
         '''
