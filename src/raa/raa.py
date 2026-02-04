@@ -53,6 +53,7 @@ class UpdateReadme:
         self.gh_repo = gh_repo
         self.validate_filename()
         self.logger.info("Initialized UpdateReadme instance")
+        self.ignore_repos = []
 
         if cfg:
             import tomllib
@@ -75,6 +76,12 @@ class UpdateReadme:
             if _markers is not None:
                 FILE_MARKERS = _markers
                 self.logger.info(f"Overridden FILE_MARKERS with {FILE_MARKERS}")
+            
+            _ignore = config_data.get("IGNORE_REPOS")
+            if _ignore is not None:
+                self.ignore_repos = _ignore
+                self.logger.info(f"Loaded IGNORE_REPOS: {self.ignore_repos}")
+
         else:
             self.logger.info("Using default configuration")
 
@@ -120,6 +127,9 @@ class UpdateReadme:
                     created_at=event.created_at,
                     payload=event.payload
                 )
+                if event_data.repo in self.ignore_repos:
+                    self.logger.info(f"Ignoring event from repo: {event_data.repo}")
+                    continue
                 edict[event.id] = event_data
         self.events = edict
         self.logger.info(f"Fetched {len(self.events)} (whitelisted) events")

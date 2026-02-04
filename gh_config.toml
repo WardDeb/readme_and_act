@@ -16,6 +16,10 @@ ALLOWED_EVENT_TYPES = [
     "ReleaseEvent",
     "WatchEvent",
 ]
+# Repositories to ignore
+IGNORE_REPOS = [
+    "WardDeb/WardDeb"
+]
 
 # Wanted event types to display
 [WANTED_EVENT_TYPES]

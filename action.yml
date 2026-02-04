@@ -23,6 +23,10 @@ inputs:
     description: "GitHub token for authentication"
     default: ${{ secrets.GITHUB_TOKEN }}
     required: false
+  CFG_PATH:
+    description: "Path to the TOML configuration file"
+    default: ".github/raa.toml"
+    required: false
 
 runs:
   using: docker
@@ -33,3 +37,4 @@ runs:
     FILE_NAME: ${{ inputs.FILE_NAME }}
     REPO_NAME: ${{ inputs.REPO_NAME }}
     GH_TOKEN: ${{ inputs.GH_TOKEN }}
+    CFG_PATH: ${{ inputs.CFG_PATH }}
