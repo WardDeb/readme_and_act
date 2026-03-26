@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/WardDeb/readme_and_act/compare/v0.4.0...v0.4.1) (2026-03-26)
+
+
+### Documentation
+
+* update readme file with cron times, GH_TOKEN set[#14](https://github.com/WardDeb/readme_and_act/issues/14) ([4af85b5](https://github.com/WardDeb/readme_and_act/commit/4af85b51d303e7a59e68663f9d2bf130eb497525))
+
 ## [0.4.0](https://github.com/WardDeb/readme_and_act/compare/v0.3.0...v0.4.0) (2026-02-04)
 
 
