@@ -9,7 +9,7 @@ inputs:
     required: false
   MAX_LINES:
     description: "The maximum number of lines to place in your readme file"
-    default: 5
+    default: "5"
     required: false
   FILE_NAME:
     description: "The file location to write changes to"
@@ -21,8 +21,7 @@ inputs:
     required: false
   GH_TOKEN:
     description: "GitHub token for authentication"
-    default: ${{ secrets.GITHUB_TOKEN }}
-    required: false
+    required: true
   CFG_PATH:
     description: "Path to the TOML configuration file"
     default: ".github/raa.toml"
