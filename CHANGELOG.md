@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/WardDeb/readme_and_act/compare/v0.4.1...v0.4.2) (2026-03-26)
+
+
+### Bug Fixes
+
+* fix how gh token is passed through to docker ([#16](https://github.com/WardDeb/readme_and_act/issues/16)) ([1fa10c2](https://github.com/WardDeb/readme_and_act/commit/1fa10c2aa0233deb61ca787e98e1af3235ef1a5b))
+
 ## [0.4.1](https://github.com/WardDeb/readme_and_act/compare/v0.4.0...v0.4.1) (2026-03-26)
 
 
