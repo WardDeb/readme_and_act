@@ -19,13 +19,13 @@ An example of an updated readme:
 
 ## Action template
 
-This can be used as a template (will run every 30 minutes):
+This can be used as a template (will run every hour):
 
 ```yaml
 name: Activity
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
 jobs:
   build:
@@ -34,9 +34,9 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: WardDeb/readme_and_act@main
-        env:
+      - uses: actions/checkout@v6
+      - uses: WardDeb/readme_and_act@v0.4.0
+        with:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
